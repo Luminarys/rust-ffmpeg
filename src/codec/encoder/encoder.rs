@@ -70,7 +70,7 @@ impl Encoder {
 
 	pub fn set_bit_rate(&mut self, value: usize) {
 		unsafe {
-			(*self.as_mut_ptr()).bit_rate = value as c_int;
+			(*self.as_mut_ptr()).bit_rate = value as i64;
 		}
 	}
 

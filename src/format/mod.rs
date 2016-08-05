@@ -12,6 +12,8 @@ pub use self::format::{flag, Flags};
 
 pub mod network;
 
+pub mod io;
+
 use std::ptr;
 use std::path::Path;
 use std::ffi::{CString, CStr};

@@ -20,6 +20,10 @@ impl Output {
 		Output { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::Output) }
 	}
 
+	pub unsafe fn wrap_cio(ptr: *mut AVFormatContext) -> Self {
+		Output { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::OutputCIO) }
+	}
+
 	pub unsafe fn as_ptr(&self) -> *const AVFormatContext {
 		self.ptr as *const _
 	}

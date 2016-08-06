@@ -4,6 +4,8 @@ use ffi::*;
 pub enum Mode {
 	Input,
 	Output,
+    InputCIO,
+    OutputCIO,
 }
 
 pub struct Destructor {
@@ -28,6 +30,12 @@ impl Drop for Destructor {
 					avformat_close_input(&mut self.ptr),
 
 				Mode::Output =>
+					avformat_free_context(self.ptr),
+
+				Mode::InputCIO =>
+					avformat_free_context(self.ptr),
+
+				Mode::OutputCIO =>
 					avformat_free_context(self.ptr),
 			}
 		}

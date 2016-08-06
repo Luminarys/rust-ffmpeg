@@ -99,29 +99,25 @@ pub fn open<P: AsRef<Path>>(path: &P, format: &Format) -> Result<Context, Error>
 	}
 }
 
-pub fn open_custom_io(mut io: io::Context, format: &Format) -> Result<Context, Error> {
+pub fn open_custom_io(mut io: io::Context, input: bool) -> Result<Context, Error> {
 	unsafe {
 		let mut ps = avformat_alloc_context();
         (*ps).pb = io.as_mut_ptr();
-		match format {
-			&Format::Input(ref format) => {
-				match avformat_open_input(&mut ps, "dummy".as_ptr() as *const i8, format.as_ptr(), ptr::null_mut()) {
-					0 => {
-						match avformat_find_stream_info(ps, ptr::null_mut()) {
-							r if r >= 0 => Ok(Context::Input(context::Input::wrap_cio(ps))),
-							e           => Err(Error::from(e)),
-						}
+        if input {
+			match avformat_open_input(&mut ps, "dummy".as_ptr() as *const i8, ptr::null_mut(), ptr::null_mut()) {
+				0 => {
+					match avformat_find_stream_info(ps, ptr::null_mut()) {
+						r if r >= 0 => Ok(Context::Input(context::Input::wrap_cio(ps))),
+						e           => Err(Error::from(e)),
 					}
-
-					e => Err(Error::from(e))
 				}
+
+				e => Err(Error::from(e))
 			}
-
-			&Format::Output(ref format) => {
-				match avformat_alloc_output_context2(&mut ps, format.as_ptr(), ptr::null(), "dummy".as_ptr() as *const i8) {
-					0 => Ok(Context::Output(context::Output::wrap_cio(ps))),
-					e => Err(Error::from(e))
-				}
+        } else {
+			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), ptr::null(), "dummy".as_ptr() as *const i8) {
+				0 => Ok(Context::Output(context::Output::wrap_cio(ps))),
+				e => Err(Error::from(e))
 			}
 		}
 	}

@@ -99,12 +99,14 @@ pub fn open<P: AsRef<Path>>(path: &P, format: &Format) -> Result<Context, Error>
 	}
 }
 
-pub fn open_custom_io(mut io: io::Context, input: bool) -> Result<Context, Error> {
+pub fn open_custom_io(mut io: io::Context, input: bool, container: &str) -> Result<Context, Error> {
+    use std::ffi::CString;
 	unsafe {
 		let mut ps = avformat_alloc_context();
-        (*ps).pb = io.as_mut_ptr();
         if input {
-			match avformat_open_input(&mut ps, "dummy".as_ptr() as *const i8, ptr::null_mut(), ptr::null_mut()) {
+            (*ps).pb = io.as_mut_ptr();
+            let format = av_find_input_format(CString::new(container).unwrap().as_ptr());
+			match avformat_open_input(&mut ps, CString::new("dummy").unwrap().as_ptr(), format, ptr::null_mut()) {
 				0 => {
 					match avformat_find_stream_info(ps, ptr::null_mut()) {
 						r if r >= 0 => Ok(Context::Input(context::Input::wrap_cio(ps))),
@@ -115,8 +117,11 @@ pub fn open_custom_io(mut io: io::Context, input: bool) -> Result<Context, Error
 				e => Err(Error::from(e))
 			}
         } else {
-			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), ptr::null(), "dummy".as_ptr() as *const i8) {
-				0 => Ok(Context::Output(context::Output::wrap_cio(ps))),
+			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), ptr::null(), CString::new("dummy").unwrap().as_ptr()) {
+				0 => {
+                    (*ps).pb = io.as_mut_ptr();
+                    Ok(Context::Output(context::Output::wrap_cio(ps)))
+                },
 				e => Err(Error::from(e))
 			}
 		}

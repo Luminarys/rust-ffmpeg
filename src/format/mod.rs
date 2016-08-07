@@ -117,7 +117,7 @@ pub fn open_custom_io(mut io: io::Context, input: bool, container: &str) -> Resu
 				e => Err(Error::from(e))
 			}
         } else {
-			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), ptr::null(), CString::new("dummy").unwrap().as_ptr()) {
+			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), CString::new(container).unwrap().as_ptr(), ptr::null()) {
 				0 => {
                     (*ps).pb = io.as_mut_ptr();
                     Ok(Context::Output(context::Output::wrap_cio(ps)))

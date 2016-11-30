@@ -2,7 +2,7 @@ use ffi::*;
 use libc::{c_uchar, c_void, uint8_t, c_int, int64_t};
 
 pub struct Context {
-    cleanup: fn(*mut c_void),
+    pub cleanup: fn(*mut c_void),
     ptr: *mut AVIOContext,
 }
 
@@ -77,11 +77,5 @@ impl Context {
 
     pub unsafe fn as_mut_ptr(&mut self) -> *mut AVIOContext {
         self.ptr
-    }
-}
-
-impl Drop for Context {
-    fn drop(&mut self) {
-        unsafe { (self.cleanup)((*self.ptr).opaque) }
     }
 }

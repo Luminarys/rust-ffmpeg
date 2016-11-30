@@ -4,6 +4,7 @@ use std::mem;
 use std::ffi::CString;
 
 use ffi::*;
+use libc::c_void;
 use ::{Error, Codec, Stream, Packet, format};
 use super::common::Context;
 use super::destructor;
@@ -21,8 +22,8 @@ impl Input {
 		Input { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::Input) }
 	}
 
-	pub unsafe fn wrap_cio(ptr: *mut AVFormatContext) -> Self {
-		Input { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::InputCIO) }
+	pub unsafe fn wrap_cio(ptr: *mut AVFormatContext, f: fn(*mut c_void)) -> Self {
+		Input { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::InputCIO(f)) }
 	}
 
 	pub unsafe fn as_ptr(&self) -> *const AVFormatContext {

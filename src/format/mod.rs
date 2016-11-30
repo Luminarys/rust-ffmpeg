@@ -109,7 +109,7 @@ pub fn open_custom_io(mut io: io::Context, input: bool, container: &str) -> Resu
 			match avformat_open_input(&mut ps, CString::new("dummy").unwrap().as_ptr(), format, ptr::null_mut()) {
 				0 => {
 					match avformat_find_stream_info(ps, ptr::null_mut()) {
-						r if r >= 0 => Ok(Context::Input(context::Input::wrap_cio(ps))),
+						r if r >= 0 => Ok(Context::Input(context::Input::wrap_cio(ps, io.cleanup))),
 						e           => Err(Error::from(e)),
 					}
 				}
@@ -120,7 +120,7 @@ pub fn open_custom_io(mut io: io::Context, input: bool, container: &str) -> Resu
 			match avformat_alloc_output_context2(&mut ps, ptr::null_mut(), CString::new(container).unwrap().as_ptr(), ptr::null()) {
 				0 => {
                     (*ps).pb = io.as_mut_ptr();
-                    Ok(Context::Output(context::Output::wrap_cio(ps)))
+                    Ok(Context::Output(context::Output::wrap_cio(ps, io.cleanup)))
                 },
 				e => Err(Error::from(e))
 			}

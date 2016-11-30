@@ -3,6 +3,7 @@ use std::ptr;
 use std::ffi::CString;
 
 use ffi::*;
+use libc::c_void;
 use ::{Error, StreamMut, Dictionary, format};
 use super::common::Context;
 use super::destructor;
@@ -20,8 +21,8 @@ impl Output {
 		Output { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::Output) }
 	}
 
-	pub unsafe fn wrap_cio(ptr: *mut AVFormatContext) -> Self {
-		Output { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::OutputCIO) }
+	pub unsafe fn wrap_cio(ptr: *mut AVFormatContext, f: fn(*mut c_void)) -> Self {
+		Output { ptr: ptr, ctx: Context::wrap(ptr, destructor::Mode::OutputCIO(f)) }
 	}
 
 	pub unsafe fn as_ptr(&self) -> *const AVFormatContext {

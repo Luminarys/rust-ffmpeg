@@ -102,7 +102,7 @@ pub fn open<P: AsRef<Path>>(path: &P, format: &Format) -> Result<Context, Error>
 pub fn open_custom_io(mut io: io::Context, input: bool, container: &str) -> Result<Context, Error> {
     use std::ffi::CString;
 	unsafe {
-		let mut ps = avformat_alloc_context();
+		let mut ps: *mut AVFormatContext = ptr::null_mut();
         if input {
             (*ps).pb = io.as_mut_ptr();
             let format = av_find_input_format(CString::new(container).unwrap().as_ptr());

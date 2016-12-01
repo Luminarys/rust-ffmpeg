@@ -33,7 +33,7 @@ impl Drop for Destructor {
 
                 Mode::InputCIO(f) => {
                     f((*(*self.ptr).pb).opaque);
-                    avformat_free_context(self.ptr);
+                    avformat_close_input(&mut self.ptr);
                 }
 
                 Mode::OutputCIO(f) => {

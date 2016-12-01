@@ -1,4 +1,5 @@
 extern crate ffmpeg;
+extern crate ffmpeg_sys;
 
 use std::env;
 use std::path::Path;
@@ -134,31 +135,31 @@ fn main() {
 
     let mut decoded = frame::Audio::empty();
     let mut encoded = ffmpeg::Packet::empty();
-    let mut v: Vec<u8> = Vec::new();
 
     for (stream, mut packet) in ictx.packets() {
         if stream.index() == transcoder.stream {
             packet.rescale_ts(stream.time_base(), in_time_base);
 
             if let Ok(true) = transcoder.decoder.decode(&packet, &mut decoded) {
-                println!("{:?}", decoded.data(0));
                 let timestamp = decoded.timestamp();
                 decoded.set_pts(timestamp);
 
                 transcoder.filter.get("in").unwrap().source().add(&decoded).unwrap();
 
-                while let Ok(..) = transcoder.filter
-                    .get("out")
-                    .unwrap()
-                    .sink()
-                    .frame(&mut decoded) {
-                    println!("{:?}", &v[..]);
-                    println!("{:?}", decoded.data(0));
-                    assert!(&v[..] == decoded.data(0));
-                    if let Ok(true) = transcoder.encoder.encode(&decoded, &mut encoded) {
-                        encoded.set_stream(0);
-                        encoded.rescale_ts(in_time_base, out_time_base);
-                        encoded.write_interleaved(&mut octx).unwrap();
+                loop {
+                    let mut decoded = frame::Audio::empty();
+                    if let Ok(..) = transcoder.filter
+                        .get("out")
+                        .unwrap()
+                        .sink()
+                        .frame(&mut decoded) {
+                        if let Ok(true) = transcoder.encoder.encode(&decoded, &mut encoded) {
+                            encoded.set_stream(0);
+                            encoded.rescale_ts(in_time_base, out_time_base);
+                            encoded.write_interleaved(&mut octx).unwrap();
+                        }
+                    } else {
+                        break
                     }
                 }
             }

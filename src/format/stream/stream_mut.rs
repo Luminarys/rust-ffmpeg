@@ -9,7 +9,6 @@ use format::context::common::Context;
 pub struct StreamMut<'a> {
 	context: &'a mut Context,
 	index:   usize,
-
 	immutable: Stream<'a>,
 }
 
@@ -18,7 +17,6 @@ impl<'a> StreamMut<'a> {
 		StreamMut {
 			context: mem::transmute_copy(&context),
 			index:   index,
-
 			immutable: Stream::wrap(mem::transmute_copy(&context), index)
 		}
 	}

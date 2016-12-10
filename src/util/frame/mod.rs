@@ -34,6 +34,14 @@ pub struct Frame {
 unsafe impl Send for Frame { }
 unsafe impl Sync for Frame { }
 
+impl Clone for Frame {
+    fn clone(&self) -> Frame {
+        unsafe {
+            Frame::wrap(av_frame_clone(self.ptr))
+        }
+    }
+}
+
 impl Frame {
 	#[inline(always)]
 	pub unsafe fn wrap(ptr: *mut AVFrame) -> Self {
